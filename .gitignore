@@ -1,0 +1,17 @@
+# python
+__pycache__
+
+# venv
+.venv
+
+# pyenv
+.python-version
+
+# poetry
+poetry.lock
+
+# pytest
+.pytest_cache
+
+# file 
+*.txt
