@@ -1,7 +1,9 @@
 from __future__ import annotations
 import time
 from pathlib import Path
-
+from typing import Any, Callable
+import statistics
+import csv
 
 class Timer:
     def __init__(self):
@@ -102,3 +104,52 @@ class TimerWriter:
             text: str = ", ".join(words)
             texts.append(text)
         return texts
+
+
+class TimerComputer:
+    def __init__(self):
+        self.compute_types: list[str] = [
+            "mean",
+            "median",
+            "min",
+            "max",
+        ]
+        self.compute_type2func: dict[str, Callable] = {
+            "mean": statistics.mean,
+            "median": statistics.median,
+            "min": min,
+            "max": max,
+        }
+
+
+    def compute(self, datum: list[list[float]]) -> list[list[Any]]:
+        max_num_rows: int = max([len(data) for data in datum])
+        rows: list[list[float]] = [[] for _ in range(max_num_rows)]
+        datum = datum if len(datum) < 3 else datum[1:]
+        for data in datum:
+            for di in range(len(data)):
+                x = data[di]
+                rows[di].append(x)
+
+
+        computed_rows_list: list[list[Any]] = []
+        for ct in self.compute_types:
+            computed_rows: list[Any] = []
+            computed_rows.append(f"{ct:<6}")
+            for row in rows:
+                ans = self.compute_type2func[ct](row)
+                computed_rows.append(ans)
+            computed_rows_list.append(computed_rows)
+        return computed_rows_list
+
+
+    def compute_from_csv(self, path: Path):
+        with path.open("r") as f:
+            reader = csv.reader(f)
+            rows = [row for row in reader]
+
+        assert len(rows) >= 2
+        datum = [[float(px) for px in row] for row in rows[1:]]
+
+        computed = self.compute(datum)
+        return computed
